@@ -41,8 +41,12 @@ v8::Persistent<v8::FunctionTemplate> Glyphs::constructor;
 
 Glyphs::Glyphs() : node::ObjectWrap() {}
 
-Glyphs::Glyphs(const char *data, size_t length) : node::ObjectWrap() {
-    glyphs.ParseFromArray(data, length);
+Glyphs::Glyphs(const char *data, size_t length, bool isTile) : node::ObjectWrap() {
+    if (isTile) {
+        tile.ParseFromArray(data, length);
+    } else {
+        glyphs.ParseFromArray(data, length);
+    }
 }
 
 Glyphs::~Glyphs() {}
@@ -60,6 +64,7 @@ void Glyphs::Init(v8::Handle<v8::Object> target) {
     constructor->SetClassName(name);
 
     // Add all prototype methods, getters and setters here.
+    constructor->PrototypeTemplate()->SetAccessor(v8::String::NewSymbol("length"), Length);
     NODE_SET_PROTOTYPE_METHOD(constructor, "serialize", Serialize);
     NODE_SET_PROTOTYPE_METHOD(constructor, "serializeTile", SerializeTile);
     NODE_SET_PROTOTYPE_METHOD(constructor, "range", Range);
@@ -77,6 +82,9 @@ v8::Handle<v8::Value> Glyphs::New(const v8::Arguments& args) {
     if (args.Length() > 0 && !node::Buffer::HasInstance(args[0])) {
         return ThrowException(v8::Exception::TypeError(v8::String::New("First argument may only be a buffer")));
     }
+    if (args.Length() > 1 && !args[1]->IsBoolean()) {
+        return ThrowException(v8::Exception::TypeError(v8::String::New("Second argument may only be a boolean")));
+    }
 
     Glyphs* glyphs;
 
@@ -84,7 +92,8 @@ v8::Handle<v8::Value> Glyphs::New(const v8::Arguments& args) {
         glyphs = new Glyphs();
     } else {
         v8::Local<v8::Object> buffer = args[0]->ToObject();
-        glyphs = new Glyphs(node::Buffer::Data(buffer), node::Buffer::Length(buffer));
+        bool isTile = args[1]->BooleanValue();
+        glyphs = new Glyphs(node::Buffer::Data(buffer), node::Buffer::Length(buffer), isTile);
     }
     
     glyphs->Wrap(args.This());
@@ -317,7 +326,6 @@ void Glyphs::AsyncShape(uv_work_t* req) {
     std::vector<fontserver::tile_face *> tile_faces;
 
     llmr::vector::tile& tile = baton->glyphs->tile;
-    std::cout << "SIZE: " << tile.layers_size() << '\n';
 
     // for every label
     for (int i = 0; i < tile.layers_size(); i++) {
@@ -352,7 +360,6 @@ void Glyphs::AsyncShape(uv_work_t* req) {
             std::string text;
             if (value.has_string_value()) {
                 text = value.string_value();
-                std::cout << text << '\n';
             }
 
             if (!text.empty()) {
@@ -446,7 +453,6 @@ void Glyphs::AsyncShape(uv_work_t* req) {
 
     // Insert SDF glyphs + bitmaps
     for (auto const& face : tile_faces) {
-        std::cout << face->family << ' ' << face->style << '\n';
         llmr::vector::face *mutable_face = tile.add_faces();
         mutable_face->set_family(face->family);
         mutable_face->set_style(face->style);

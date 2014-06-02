@@ -46,7 +46,7 @@ describe('glyphs', function() {
             done();
         });
         */
-        var glyphs = new fontserver.Glyphs(data);
+        var glyphs = new fontserver.Glyphs(data, false);
         var vt = new Glyphs(new Protobuf(new Uint8Array(glyphs.serialize())));
         var json = JSON.parse(JSON.stringify(vt, nobuffer));
         jsonEqual('serialize', json);
@@ -54,7 +54,7 @@ describe('glyphs', function() {
     });
 
     it('serializeTile', function(done) {
-        var glyphs = new fontserver.Glyphs(tiledata);
+        var glyphs = new fontserver.Glyphs(tiledata, true);
         var vt = new VectorTile(new Protobuf(new Uint8Array(glyphs.serializeTile())));
         var json = JSON.parse(JSON.stringify(vt, nobuffer));
         jsonEqual('serializeTile', json);
@@ -62,7 +62,7 @@ describe('glyphs', function() {
     });
 
     it('shape', function(done) {
-        var glyphs = new fontserver.Glyphs(tiledata);
+        var glyphs = new fontserver.Glyphs(tiledata, true);
         glyphs.shape('Open Sans Regular, Siyam Rupali Regular', function(err) {
             assert.ifError(err);
             var vt = new VectorTile(new Protobuf(new Uint8Array(glyphs.serializeTile())));

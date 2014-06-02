@@ -12,7 +12,7 @@ public:
     static bool HasInstance(v8::Handle<v8::Value> val);
 protected:
     Glyphs();
-    Glyphs(const char *data, size_t length);
+    Glyphs(const char *data, size_t length, bool isTile);
     ~Glyphs();
 
     static v8::Handle<v8::Value> New(const v8::Arguments& args);

@@ -32,26 +32,6 @@ function range(options, callback) {
 }
 
 // Retrieve shaped glyphs for a zlib deflated Mapnik vector pbf.
-function shape(zdata, options, callback) {
-    'use strict';
-    options = options || {};
-    options.fontstack = options.fontstack || 'Open Sans Regular';
-
-    zlib.inflate(zdata, inflated);
-
-    function inflated(err, data) {
-        if (err) return callback(err);
-        var glyphs = new fontserver.Glyphs();
-        glyphs.shape(options.fontstack, data, deflate);
-    }
-
-    function deflate(err) {
-        if (err) return callback(err);
-        var after = glyphs.serialize();
-        zlib.deflate(after, callback);
-    }
-}
-
 // Register fonts in FreeType.
 function conf(options) {
     options = options || {};
