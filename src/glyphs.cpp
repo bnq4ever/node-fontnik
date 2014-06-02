@@ -42,11 +42,7 @@ v8::Persistent<v8::FunctionTemplate> Glyphs::constructor;
 Glyphs::Glyphs() : node::ObjectWrap() {}
 
 Glyphs::Glyphs(const char *data, size_t length, bool isTile) : node::ObjectWrap() {
-    if (isTile) {
-        tile.ParseFromArray(data, length);
-    } else {
-        glyphs.ParseFromArray(data, length);
-    }
+    isTile ? tile.ParseFromArray(data, length) : glyphs.ParseFromArray(data, length);
 }
 
 Glyphs::~Glyphs() {}
@@ -64,7 +60,6 @@ void Glyphs::Init(v8::Handle<v8::Object> target) {
     constructor->SetClassName(name);
 
     // Add all prototype methods, getters and setters here.
-    constructor->PrototypeTemplate()->SetAccessor(v8::String::NewSymbol("length"), Length);
     NODE_SET_PROTOTYPE_METHOD(constructor, "serialize", Serialize);
     NODE_SET_PROTOTYPE_METHOD(constructor, "serializeTile", SerializeTile);
     NODE_SET_PROTOTYPE_METHOD(constructor, "range", Range);
@@ -92,7 +87,7 @@ v8::Handle<v8::Value> Glyphs::New(const v8::Arguments& args) {
         glyphs = new Glyphs();
     } else {
         v8::Local<v8::Object> buffer = args[0]->ToObject();
-        bool isTile = args[1]->BooleanValue();
+        bool isTile = args[1]->BooleanValue() || false;
         glyphs = new Glyphs(node::Buffer::Data(buffer), node::Buffer::Length(buffer), isTile);
     }
     
@@ -104,13 +99,6 @@ v8::Handle<v8::Value> Glyphs::New(const v8::Arguments& args) {
 bool Glyphs::HasInstance(v8::Handle<v8::Value> val) {
     if (!val->IsObject()) return false;
     return constructor->HasInstance(val->ToObject());
-}
-
-v8::Handle<v8::Value> Glyphs::Length(v8::Local<v8::String> property, const v8::AccessorInfo &info) {
-    v8::HandleScope scope;
-    Glyphs* glyphs = node::ObjectWrap::Unwrap<Glyphs>(info.This());
-    v8::Local<v8::Number> length = v8::Uint32::New(glyphs->tile.layers_size());
-    return scope.Close(length);
 }
 
 v8::Handle<v8::Value> Glyphs::Serialize(const v8::Arguments& args) {

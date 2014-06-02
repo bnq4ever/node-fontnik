@@ -46,7 +46,7 @@ describe('glyphs', function() {
             done();
         });
         */
-        var glyphs = new fontserver.Glyphs(data, false);
+        var glyphs = new fontserver.Glyphs(data);
         var vt = new Glyphs(new Protobuf(new Uint8Array(glyphs.serialize())));
         var json = JSON.parse(JSON.stringify(vt, nobuffer));
         jsonEqual('serialize', json);

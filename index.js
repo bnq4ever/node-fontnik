@@ -31,7 +31,6 @@ function range(options, callback) {
     }
 }
 
-// Retrieve shaped glyphs for a zlib deflated Mapnik vector pbf.
 // Register fonts in FreeType.
 function conf(options) {
     options = options || {};
