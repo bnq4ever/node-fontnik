@@ -3,8 +3,10 @@ var assert = require('assert');
 var zlib = require('zlib');
 var fs = require('fs');
 var zdata = fs.readFileSync(__dirname + '/fixtures/range.0.256.pbf');
+var ztile = fs.readFileSync(__dirname + '/fixtures/mapbox-streets-v4.13.1306.3163.vector.pbf');
 var Protobuf = require('pbf');
 var Glyphs = require('./format/glyphs');
+var VectorTile = require('./format/vectortile');
 var UPDATE = process.env.UPDATE;
 
 function nobuffer(key, val) {
@@ -18,11 +20,16 @@ function jsonEqual(key, json) {
 
 describe('glyphs', function() {
     var data;
+    var tiledata;
     before(function(done) {
         zlib.inflate(zdata, function(err, d) {
             assert.ifError(err);
             data = d;
-            done();
+            zlib.inflate(ztile, function(err, d) {
+                assert.ifError(err);
+                tiledata = d;
+                done();
+            });
         });
     });
 
@@ -46,11 +53,11 @@ describe('glyphs', function() {
         done();
     });
 
-    it.skip('shape', function(done) {
-        var tile = new fontserver.Tile(data);
-        tile.shape('Open Sans Regular, Arial Unicode MS Regular', function(err) {
+    it('shape', function(done) {
+        var glyphs = new fontserver.Glyphs(tiledata);
+        glyphs.shape('Open Sans Regular, Siyam Rupali Regular', function(err) {
             assert.ifError(err);
-            var vt = new Glyphs(new Protobuf(new Uint8Array(tile.serialize())));
+            var vt = new VectorTile(new Protobuf(new Uint8Array(glyphs.serialize())));
             var json = JSON.parse(JSON.stringify(vt, nobuffer));
             jsonEqual('shape', json);
             done();
