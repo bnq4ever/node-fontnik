@@ -61,6 +61,7 @@ void Glyphs::Init(v8::Handle<v8::Object> target) {
 
     // Add all prototype methods, getters and setters here.
     NODE_SET_PROTOTYPE_METHOD(constructor, "serialize", Serialize);
+    NODE_SET_PROTOTYPE_METHOD(constructor, "serializeTile", SerializeTile);
     NODE_SET_PROTOTYPE_METHOD(constructor, "range", Range);
     NODE_SET_PROTOTYPE_METHOD(constructor, "shape", Shape);
 
@@ -96,10 +97,24 @@ bool Glyphs::HasInstance(v8::Handle<v8::Value> val) {
     return constructor->HasInstance(val->ToObject());
 }
 
+v8::Handle<v8::Value> Glyphs::Length(v8::Local<v8::String> property, const v8::AccessorInfo &info) {
+    v8::HandleScope scope;
+    Glyphs* glyphs = node::ObjectWrap::Unwrap<Glyphs>(info.This());
+    v8::Local<v8::Number> length = v8::Uint32::New(glyphs->tile.layers_size());
+    return scope.Close(length);
+}
+
 v8::Handle<v8::Value> Glyphs::Serialize(const v8::Arguments& args) {
     v8::HandleScope scope;
     llmr::glyphs::glyphs& glyphs = node::ObjectWrap::Unwrap<Glyphs>(args.This())->glyphs;
     std::string serialized = glyphs.SerializeAsString();
+    return scope.Close(node::Buffer::New(serialized.data(), serialized.length())->handle_);
+}
+
+v8::Handle<v8::Value> Glyphs::SerializeTile(const v8::Arguments& args) {
+    v8::HandleScope scope;
+    llmr::vector::tile& tile = node::ObjectWrap::Unwrap<Glyphs>(args.This())->tile;
+    std::string serialized = tile.SerializeAsString();
     return scope.Close(node::Buffer::New(serialized.data(), serialized.length())->handle_);
 }
 
@@ -302,6 +317,7 @@ void Glyphs::AsyncShape(uv_work_t* req) {
     std::vector<fontserver::tile_face *> tile_faces;
 
     llmr::vector::tile& tile = baton->glyphs->tile;
+    std::cout << "SIZE: " << tile.layers_size() << '\n';
 
     // for every label
     for (int i = 0; i < tile.layers_size(); i++) {
@@ -336,6 +352,7 @@ void Glyphs::AsyncShape(uv_work_t* req) {
             std::string text;
             if (value.has_string_value()) {
                 text = value.string_value();
+                std::cout << text << '\n';
             }
 
             if (!text.empty()) {
@@ -429,6 +446,7 @@ void Glyphs::AsyncShape(uv_work_t* req) {
 
     // Insert SDF glyphs + bitmaps
     for (auto const& face : tile_faces) {
+        std::cout << face->family << ' ' << face->style << '\n';
         llmr::vector::face *mutable_face = tile.add_faces();
         mutable_face->set_family(face->family);
         mutable_face->set_style(face->style);
