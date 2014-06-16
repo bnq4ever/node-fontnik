@@ -46,9 +46,9 @@ describe('glyphs', function() {
         done();
     });
 
-    it('range', function(done) {
+    it('range with bitmaps', function(done) {
         var glyphs = new fontnik.Glyphs();
-        glyphs.range('Open Sans Regular', '0-256', fontnik.getRange(0, 256), function(err) {
+        glyphs.range('Open Sans Regular', '0-256', fontnik.getRange(0, 256), true, function(err) {
             assert.ifError(err);
             var vt = new Glyphs(new Protobuf(new Uint8Array(glyphs.serialize())));
             var json = JSON.parse(JSON.stringify(vt, nobuffer));
@@ -57,11 +57,34 @@ describe('glyphs', function() {
         });
     });
 
+    it('range without bitmaps', function(done) {
+        var glyphs = new fontnik.Glyphs();
+        glyphs.range('Open Sans Regular', '0-256', fontnik.getRange(0, 256), false, function(err) {
+            assert.ifError(err);
+            var vt = new Glyphs(new Protobuf(new Uint8Array(glyphs.serialize())));
+            var json = JSON.parse(JSON.stringify(vt, nobuffer));
+            jsonEqual('range-without-bitmaps', json);
+            done();
+        });
+    });
+
+    it('rects', function(done) {
+        this.timeout(5000);
+        var glyphs = new fontnik.Glyphs();
+        glyphs.rects('Open Sans Regular', fontnik.getRange(0, 65533), function(err) {
+            assert.ifError(err);
+            var vt = new Glyphs(new Protobuf(new Uint8Array(glyphs.serialize())));
+            var json = JSON.parse(JSON.stringify(vt, nobuffer));
+            jsonEqual('rects', json);
+            done();
+        });
+    });
+
     // Render a long range of characters which can cause segfaults
     // with V8 arrays ... not sure yet why.
     it('longrange', function(done) {
         var glyphs = new fontnik.Glyphs();
-        glyphs.range('Open Sans Regular', '0-1024', fontnik.getRange(0, 1024), function(err) {
+        glyphs.range('Open Sans Regular', '0-1024', fontnik.getRange(0, 1024), true, function(err) {
             assert.ifError(err);
             done();
         });
@@ -69,7 +92,7 @@ describe('glyphs', function() {
 
     it('range (chars input)', function(done) {
         var glyphs = new fontnik.Glyphs();
-        glyphs.range('Open Sans Regular', 'a-and-z', [('a').charCodeAt(0), ('z').charCodeAt(0)], function(err) {
+        glyphs.range('Open Sans Regular', 'a-and-z', [('a').charCodeAt(0), ('z').charCodeAt(0)], true, function(err) {
             assert.ifError(err);
             var vt = new Glyphs(new Protobuf(new Uint8Array(glyphs.serialize())));
             var json = JSON.parse(JSON.stringify(vt, nobuffer));
@@ -89,7 +112,7 @@ describe('glyphs', function() {
     it('range typeerror range', function(done) {
         var glyphs = new fontnik.Glyphs();
         assert.throws(function() {
-            glyphs.range('Open Sans Regular', 0, fontnik.getRange(0, 256), function() {});
+            glyphs.range('Open Sans Regular', 0, fontnik.getRange(0, 256), true, function() {});
         }, /range must be a string/);
         done();
     });
@@ -97,22 +120,30 @@ describe('glyphs', function() {
     it('range typeerror chars', function(done) {
         var glyphs = new fontnik.Glyphs();
         assert.throws(function() {
-            glyphs.range('Open Sans Regular', '0-256', 'foo', function() {});
+            glyphs.range('Open Sans Regular', '0-256', 'foo', true, function() {});
         }, /chars must be an array/);
+        done();
+    });
+
+    it('range typeerror bitmap', function(done) {
+        var glyphs = new fontnik.Glyphs();
+        assert.throws(function() {
+            glyphs.range('Open Sans Regular', '0-256', fontnik.getRange(0, 256), null, function() {});
+        }, /bitmap must be a boolean/);
         done();
     });
 
     it('range typeerror callback', function(done) {
         var glyphs = new fontnik.Glyphs();
         assert.throws(function() {
-            glyphs.range('Open Sans Regular', '0-256', fontnik.getRange(0, 256), '');
+            glyphs.range('Open Sans Regular', '0-256', fontnik.getRange(0, 256), true, '');
         }, /callback must be a function/);
         done();
     });
 
     it('range for fontstack with 0 matching fonts', function(done) {
         var glyphs = new fontnik.Glyphs();
-        glyphs.range('doesnotexist', '0-256', fontnik.getRange(0, 256), function(err) {
+        glyphs.range('doesnotexist', '0-256', fontnik.getRange(0, 256), true, function(err) {
             assert.ok(err);
             assert.equal('Error: Failed to find face doesnotexist', err.toString());
             done();
@@ -121,7 +152,7 @@ describe('glyphs', function() {
 
     it('range for fontstack with 1 bad font', function(done) {
         var glyphs = new fontnik.Glyphs();
-        glyphs.range('Open Sans Regular, doesnotexist', '0-256', fontnik.getRange(0, 256), function(err) {
+        glyphs.range('Open Sans Regular, doesnotexist', '0-256', fontnik.getRange(0, 256), true, function(err) {
             assert.ok(err);
             assert.equal('Error: Failed to find face doesnotexist', err.toString());
             done();

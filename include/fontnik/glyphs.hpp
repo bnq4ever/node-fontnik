@@ -41,6 +41,9 @@ public:
     std::string Serialize();
     void Range(std::string fontstack,
                std::string range,
+               std::vector<std::uint32_t> chars,
+               bool bitmap);
+    void Rects(std::string fontstack,
                std::vector<std::uint32_t> chars);
 
     static std::string Trim(std::string str, std::string whitespace);

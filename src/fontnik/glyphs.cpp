@@ -34,7 +34,8 @@ std::string Glyphs::Serialize()
 
 void Glyphs::Range(std::string fontstack,
                    std::string range,
-                   std::vector<std::uint32_t> chars)
+                   std::vector<std::uint32_t> chars,
+                   bool bitmap)
 {
     mapnik::freetype_engine font_engine_;
     mapnik::face_manager_freetype font_manager(font_engine_);
@@ -87,7 +88,7 @@ void Glyphs::Range(std::string fontstack,
             mutable_glyph->set_top(glyph.top - glyph.ascender);
             mutable_glyph->set_advance(glyph.advance);
 
-            if (glyph.width > 0) {
+            if (bitmap && glyph.width > 0) {
                 mutable_glyph->set_bitmap(glyph.bitmap);
             }
 
@@ -95,6 +96,12 @@ void Glyphs::Range(std::string fontstack,
             break;
         }
     }
+}
+
+void Glyphs::Rects(std::string fontstack,
+                   std::vector<std::uint32_t> chars)
+{
+    Range(fontstack, "0-65534", chars, false);
 }
 
 std::string Glyphs::Trim(std::string str, std::string whitespace)

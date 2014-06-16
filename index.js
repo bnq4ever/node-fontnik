@@ -13,6 +13,7 @@ conf(env_options);
 
 module.exports = fontnik;
 module.exports.range = range;
+module.exports.rects = rects;
 module.exports.getRange = getRange;
 
 // Retrieve a range of glyphs as a pbf.
@@ -20,9 +21,26 @@ function range(options, callback) {
     'use strict';
     options = options || {};
     options.fontstack = options.fontstack || 'Open Sans Regular';
+    options.bitmap = options.bitmap === false ? false : true;
 
     var glyphs = new fontnik.Glyphs();
-    glyphs.range(options.fontstack, options.start + '-' + options.end, getRange(options.start, options.end), deflate);
+    glyphs.range(options.fontstack, options.start + '-' + options.end, getRange(options.start, options.end), options.bitmap, deflate);
+
+    function deflate(err) {
+        if (err) return callback(err);
+        var after = glyphs.serialize();
+        zlib.deflate(after, callback);
+    }
+}
+
+// Retrieve glyph rects of a fontstack as a pbf.
+function rects(options, callback) {
+    'use strict';
+    options = options || {};
+    options.fontstack = options.fontstack || 'Open Sans Regular';
+
+    var glyphs = new fontnik.Glyphs();
+    glyphs.rects(options.fontstack, getRange(0, 65533), deflate);
 
     function deflate(err) {
         if (err) return callback(err);

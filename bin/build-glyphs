@@ -4,8 +4,9 @@ var fontnik = require('../index.js');
 var path = require('path');
 var fs = require('fs');
 var queue = require('queue-async');
+var argv = require('minimist')(process.argv.slice(2));
 
-if (process.argv.length !== 4) {
+if (argv._.length !== 2) {
     console.log('Usage:');
     console.log('  build-glyphs <fontstack> <output dir>');
     console.log('');
@@ -14,8 +15,9 @@ if (process.argv.length !== 4) {
     process.exit(1);
 }
 
-var fontstack = process.argv[2];
-var dir = path.resolve(process.argv[3]);
+var fontstack = argv._[0];
+var dir = path.resolve(argv._[1]);
+var bitmap = argv.bitmap === 'false' ? false : true;
 
 if (!fs.existsSync(dir)) {
     console.warn('Error: Directory %s does not exist', dir);
@@ -28,9 +30,14 @@ for (var i = 0; i < 65534; (i = i + 256)) {
     q.defer(writeGlyphs, {
         fontstack: fontstack,
         start: i,
-        end: Math.min(i + 255, 65533)
+        end: Math.min(i + 255, 65533),
+        bitmap: bitmap
     });
 }
+
+q.defer(writeRects, {
+    fontstack: fontstack
+});
 
 function writeGlyphs(opts, done) {
     fontnik.range(opts, function(err, zdata) {
@@ -43,3 +50,13 @@ function writeGlyphs(opts, done) {
     });
 }
 
+function writeRects(opts, done) {
+    fontnik.rects(opts, function(err, zdata) {
+        if (err) {
+            console.warn(err.toString());
+            process.exit(1);
+        }
+        fs.writeFileSync(dir + '/rects.pbf', zdata);
+        done();
+    });
+}

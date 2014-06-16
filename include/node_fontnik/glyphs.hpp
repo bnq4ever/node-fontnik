@@ -22,8 +22,10 @@ protected:
     static v8::Handle<v8::Value> New(const v8::Arguments& args);
     static v8::Handle<v8::Value> Serialize(const v8::Arguments& args);
     static v8::Handle<v8::Value> Range(const v8::Arguments& args);
+    static v8::Handle<v8::Value> Rects(const v8::Arguments& args);
     static void AsyncRange(uv_work_t* req);
-    static void RangeAfter(uv_work_t* req);
+    static void AsyncRects(uv_work_t* req);
+    static void After(uv_work_t* req);
 
     fontnik::Glyphs glyphs;
 };
