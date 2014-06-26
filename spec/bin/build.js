@@ -7,6 +7,9 @@ var osmium = require('osmium');
 var data = {
     'cjk': {
         'china': 'china-latest.osm.pbf',
+    },
+    'cjk-extended': {
+        'china': 'china-latest.osm.pbf',
         'taiwan': 'taiwan-latest.osm.pbf',
         'japan': 'japan-latest.osm.pbf'
     },
@@ -50,7 +53,7 @@ function build(range, name, sorted) {
             sliced[a.index] = a.script + '-' + i;
         });
 
-        fs.writeFileSync(__dirname + '/../expected/' + name + '-osm.json', JSON.stringify(sliced, null, 2));
+        // fs.writeFileSync(__dirname + '/../expected/' + name + '-osm.json', JSON.stringify(sliced, null, 2));
 
         console.timeEnd(range + '-' + name);
     });

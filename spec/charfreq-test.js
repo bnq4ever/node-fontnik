@@ -1,9 +1,24 @@
 var cjk = {
-    'none': {},
+    // 'none': {},
     'cjk-osm': require('./expected/cjk-common.json'),
-    'cjk-modern': require('./expected/cjk-modern.json'),
+    'cjk-extended-osm': require('./expected/cjk-extended-common.json'),
+    'cjk-combined-osm': {},
+    // 'cjk-modern': require('./expected/cjk-modern.json'),
     'hangul-osm': require('./expected/hangul-common.json')
 };
+
+
+Object.keys(cjk['cjk-osm']).forEach(function(key) {
+    cjk['cjk-combined-osm'][key] = cjk['cjk-osm'][key];
+});
+
+Object.keys(cjk['cjk-extended-osm']).forEach(function(key) {
+    cjk['cjk-combined-osm'][key] = cjk['cjk-extended-osm'][key];
+});
+
+Object.keys(cjk).forEach(function(range) {
+    console.log(range, Object.keys(cjk[range]).length);
+})
 
 var tiles = {
     'china': [
