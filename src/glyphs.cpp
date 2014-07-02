@@ -123,9 +123,9 @@ NAN_METHOD(Glyphs::Range) {
     baton->glyphs = glyphs;
 
     baton->params = new fontnik::Params();
-    baton->params->emplace("Fontstack", &fontstack);
-    baton->params->emplace("Range", &range);
-    baton->params->emplace("Chars", &chars);
+    baton->params->emplace(fontnik::ParamKey::Fontstack, *fontstack);
+    baton->params->emplace(fontnik::ParamKey::Range, *range);
+    baton->params->emplace(fontnik::ParamKey::Chars, chars);
 
     uv_work_t *req = new uv_work_t();
     req->data = baton;

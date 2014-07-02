@@ -35,9 +35,9 @@ std::string Glyphs::Serialize()
 
 void Glyphs::Range(Params &params)
 {
-    std::string fontstack(params.get("Fontstack"));
-    std::string range(params.get("Range"));
-    std::vector<uint32_t> chars(params.get("Chars"));
+    std::string fontstack(params.get(ParamKey::Fontstack));
+    std::string range(params.get(ParamKey::Range));
+    std::vector<uint32_t> chars(params.get(ParamKey::Chars));
 
     mapnik::freetype_engine font_engine_;
     mapnik::face_manager_freetype font_manager(font_engine_);
