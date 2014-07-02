@@ -34,11 +34,11 @@ namespace fontnik
 {
 
 enum class ParamKey {
-    Fontstack,
-    Range,
-    Chars,
-    FontSize,
-    Granularity
+    Fontstack = 0,
+    Range = 1,
+    Chars = 2,
+    FontSize = 3,
+    Granularity = 4
 };
 
 typedef mapbox::util::variant<std::string,
@@ -47,6 +47,7 @@ typedef mapbox::util::variant<std::string,
 
 class Params {
 public:
+    inline Params() : params() {}
     inline Params(Params &&params)
         : params(std::move(params.params)) {}
 

@@ -39,9 +39,7 @@ public:
     ~Glyphs();
 
     std::string Serialize();
-    void Range(std::string fontstack,
-               std::string range,
-               std::vector<std::uint32_t> chars);
+    void Range(Params &params);
 
     static std::string Trim(std::string str, std::string whitespace);
 

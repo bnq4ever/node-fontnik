@@ -1,5 +1,8 @@
-// fontnik
+// node_fontnik
 #include <node_fontnik/glyphs.hpp>
+
+// fontnik
+#include <fontnik/params.hpp>
 
 // node
 #include <node_buffer.h>
@@ -11,9 +14,7 @@ namespace node_fontnik
 struct RangeBaton {
     v8::Persistent<v8::Function> callback;
     Glyphs *glyphs;
-    std::string fontstack;
-    std::string range;
-    std::vector<std::uint32_t> chars;
+    fontnik::Params *params;
     bool error;
     std::string error_name;
 };
@@ -120,9 +121,11 @@ NAN_METHOD(Glyphs::Range) {
     RangeBaton* baton = new RangeBaton();
     baton->callback = v8::Persistent<v8::Function>::New(callback);
     baton->glyphs = glyphs;
-    baton->fontstack = *fontstack;
-    baton->range = *range;
-    baton->chars = chars;
+
+    baton->params = new fontnik::Params();
+    baton->params->emplace("Fontstack", &fontstack);
+    baton->params->emplace("Range", &range);
+    baton->params->emplace("Chars", &chars);
 
     uv_work_t *req = new uv_work_t();
     req->data = baton;
@@ -137,7 +140,7 @@ void Glyphs::AsyncRange(uv_work_t* req) {
     RangeBaton* baton = static_cast<RangeBaton*>(req->data);
 
     try {
-        baton->glyphs->glyphs.Range(baton->fontstack, baton->range, baton->chars);
+        baton->glyphs->glyphs.Range(*baton->params);
     } catch(const std::runtime_error &e) {
         baton->error = true;
         baton->error_name = e.what();
