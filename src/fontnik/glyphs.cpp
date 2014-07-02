@@ -1,5 +1,6 @@
 // fontnik
 #include <fontnik/glyphs.hpp>
+#include <fontnik/params.hpp>
 #include <mapnik/font_engine_freetype.hpp>
 #include <mapnik/text/face.hpp>
 
@@ -34,7 +35,7 @@ std::string Glyphs::Serialize()
 
 void Glyphs::Range(std::string fontstack,
                    std::string range,
-                   std::vector<std::uint32_t> chars)
+                   std::vector<uint32_t> chars)
 {
     mapnik::freetype_engine font_engine_;
     mapnik::face_manager_freetype font_manager(font_engine_);

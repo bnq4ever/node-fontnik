@@ -20,36 +20,55 @@
  *
  *****************************************************************************/
 
-#ifndef FONTNIK_GLYPHS_HPP
-#define FONTNIK_GLYPHS_HPP
+#ifndef FONTNIK_PARAMS_HPP
+#define FONTNIK_PARAMS_HPP
 
-#include <fontnik/params.hpp>
+// variant
+#include <variant/variant.hpp>
 
-#include "glyphs.pb.h"
+// stl
+#include <vector>
+#include <map>
 
 namespace fontnik
 {
 
-class Glyphs
-{
+enum class ParamKey {
+    Fontstack,
+    Range,
+    Chars,
+    FontSize,
+    Granularity
+};
 
+typedef mapbox::util::variant<std::string,
+                              uint32_t,
+                              std::vector<uint32_t>> ParamValue;
+
+class Params {
 public:
-    Glyphs();
-    Glyphs(const char *data, size_t length);
-    ~Glyphs();
+    inline Params(Params &&params)
+        : params(std::move(params.params)) {}
 
-    std::string Serialize();
-    void Range(std::string fontstack,
-               std::string range,
-               std::vector<std::uint32_t> chars);
+    template <typename T>
+    inline const T *get(ParamKey key) const {
+        const auto it = params.find(key);
+        if (it != params.end() && it->second.is<T>()) {
+            return ::std::addressof(it->second.get<T>());
+        } else {
+            return nullptr;
+        }
+    }
 
-    static std::string Trim(std::string str, std::string whitespace);
+    template <typename ...Args>
+    inline void emplace(Args&& ...args) {
+        params.emplace(::std::forward<Args>(args)...);
+    }
 
-public:
-    llmr::glyphs::glyphs glyphs;
-
+private:
+    std::map<ParamKey, ParamValue> params;
 };
 
 } // ns fontnik
 
-#endif // FONTNIK_GLYPHS_HPP
+#endif // FONTNIK_PARAMS_HPP
